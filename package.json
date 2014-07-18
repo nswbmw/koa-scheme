@@ -1,0 +1,23 @@
+{
+  "name": "koa-scheme",
+  "version": "0.1.0",
+  "description": "koa-scheme is a parameter validation middleware for koa.",
+  "main": "index.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nswbmw/koa-scheme"
+  },
+  "keywords": [
+    "koa",
+    "scheme",
+    "parameter",
+    "validation",
+    "check"
+  ],
+  "dependencies": {
+    "debug": "^1.0.4",
+    "flat": "^1.2.1",
+    "path-to-regexp": "~0.2.3"
+  }
+}
