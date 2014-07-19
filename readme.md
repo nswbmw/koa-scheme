@@ -8,13 +8,13 @@ koa-scheme is a parameter validation middleware for koa. It's very easy for usin
     
 ### Usage
 
-**shceme.json**
+**scheme.json**
 
 ```
 {
   "/user/:user": {
     "request": {
-      "method": "(POST|PATCH|GET)",
+      "method": "(POST|PATCH)",
       "header": {
         "X-GG-User": "[a-zA-Z]+",
         "X-MM-User": "[a-zA-Z]+"
@@ -74,7 +74,9 @@ app.use(function* () {
     name: "nswbmw",
     age: 23,
     family: {
-      age: 28
+      "sister": {
+        age: 28
+      }
     }
   }
 });
@@ -95,8 +97,13 @@ curl -i -X POST \
     -H 'X-MM-User: mm' \
     -d '{"name": "nswbmw", "age": 23, "family": {"sister": {"name": "sister", "age": 28}}}' \
     'http://localhost:3000/user/nswbmw?vip=true'
-
-
+    
+curl -i -X PATCH \
+    -H "Content-Type: application/json" \
+    -H 'X-GG-User: gg' \
+    -H 'X-MM-User: mm' \
+    -d '{"name": "nswbmw", "age": 23, "family": {"sister": {"name": "sister", "age": 28}}}' \
+    'http://localhost:3000/user/nswbmw?vip=true'
 
 curl -i -X POST \
     -H "Content-Type: application/json" \
@@ -111,9 +118,16 @@ curl -i -X POST \
     -H 'X-MM-User: mm' \
     -d '{"name": "nswbmw", "age": 23, "family": {"sister": {"name": "sister", "age": 28}}}' \
     'http://localhost:3000/user/nswbmw'
+
+curl -i -X PATCH \
+    -H "Content-Type: application/json" \
+    -H 'X-GG-User: gg' \
+    -H 'X-MM-User: mm' \
+    -d '{"name": 23, "age": "nswbmw", "family": {"sister": {"name": "sister", "age": 28}}}' \
+    'http://localhost:3000/user/nswbmw?vip=true'
 ```
 
-![](https://github.com/nswbmw/koa-scheme/blob/master/example.png?raw=true)
+![](https://github.com/MangroveTech/koa-scheme/blob/master/example.png?raw=true)
 
 ### Lisence
 
