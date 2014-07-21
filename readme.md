@@ -74,7 +74,7 @@ app.use(function* () {
     name: "nswbmw",
     age: 23,
     family: {
-      "sister": {
+      sister: {
         age: 28
       }
     }

@@ -27,72 +27,57 @@ function scheme(conf) {
   } catch(e) {}
   return function* (next) {
     var ctx = this;
-    var req;
+    var _conf;
     var _method;
     var _path;
-    var isError;
 
     Object.keys(conf).forEach(function (path) {
-      try {
-        if (pathToRegexp(path).test(ctx.path) &&
+      if (pathToRegexp(path).test(ctx.path)) {
+        if (!conf[path].request ||
+          !conf[path].request.method ||
           RegExp(conf[path].request.method, "i").test(ctx.method)) {
-          req = conf[path];
+          _conf = conf[path];
           _method = ctx.method;
           _path = ctx.path;
 
           debug('%s %s -> %s', _method, _path, path);
           return;
         }
-      } catch(e) {}
+      }
     });
 
-    if (req) {
-      flat_req_request = flatten(req.request || {});
+    if (_conf) {
+      flat_conf_request = flatten(_conf.request || {});
       flat_ctx_request = flatten(filterFunc(ctx.request) || {});
 
-      Object.keys(flat_req_request).forEach(function (key) {
+      Object.keys(flat_conf_request).forEach(function (key) {
         key = key.toLowerCase();
-        try {
-          if (!flat_ctx_request[key]) {
-            debug('%s %s -> %s', _method, _path, key + ' : Not exist!');
-            throw new Error(_method + ' ' + _path + ' -> ' + key + ' : Not exist!');
-          }
-          if (!RegExp(flat_req_request[key]).test(flat_ctx_request[key])) {
-            debug('%s %s -> %s : %s ✖ %s', _method, _path, key, flat_ctx_request[key], flat_req_request[key]);
-            throw new Error(_method + ' ' + _path + ' -> ' + key + ' : ' + flat_ctx_request[key] + ' ✖ ' + flat_req_request[key]);
-          }     
-        } catch(e) {
-          ctx.status = 400;
-          ctx.body = e.toString();
-          isError = true;
-          return;
+        if (!flat_ctx_request[key]) {
+          debug('%s %s -> %s', _method, _path, key + ' : Not exist!');
+          ctx.throw(400, _method + ' ' + _path + ' -> ' + key + ' : Not exist!');
+        }
+        if (!RegExp(flat_conf_request[key]).test(flat_ctx_request[key])) {
+          debug('%s %s -> %s : %s ✖ %s', _method, _path, key, flat_ctx_request[key], flat_conf_request[key]);
+          ctx.throw(400, _method + ' ' + _path + ' -> ' + key + ' : ' + flat_ctx_request[key] + ' ✖ ' + flat_conf_request[key]);
         }
       });
 
-      if (!isError) {
-        yield* next;
+      yield* next;
 
-        flat_req_response = flatten(req.response || {});
-        flat_ctx_response = flatten(filterFunc(ctx.response) || {});
+      flat_conf_response = flatten(_conf.response || {});
+      flat_ctx_response = flatten(filterFunc(ctx.response) || {});
 
-        Object.keys(flat_req_response).forEach(function (key) {
-          key = key.toLowerCase();
-          try {
-            if (!flat_ctx_response[key]) {
-              debug('%s %s <- %s', _method, _path, key + ' : Not exist!');
-              throw new Error(_method + ' ' + _path + ' <- ' + key + ' : Not exist!');
-            }
-            if (!RegExp(flat_req_response[key]).test(flat_ctx_response[key])) {
-              debug('%s %s <- %s : %s ✖ %s', _method, _path, key, flat_ctx_response[key], flat_req_response[key]);
-              throw new Error(_method + ' ' + _path + ' <- ' + key + ' : ' + flat_ctx_response[key] + ' ✖ ' + flat_req_response[key]);
-            }     
-          } catch(e) {
-            ctx.status = 500;
-            ctx.body = e.toString();
-            return;
-          }
-        });
-      }
+      Object.keys(flat_conf_response).forEach(function (key) {
+        key = key.toLowerCase();
+        if (!flat_ctx_response[key]) {
+          debug('%s %s <- %s', _method, _path, key + ' : Not exist!');
+          ctx.throw(500, _method + ' ' + _path + ' <- ' + key + ' : Not exist!');
+        }
+        if (!RegExp(flat_conf_response[key]).test(flat_ctx_response[key])) {
+          debug('%s %s <- %s : %s ✖ %s', _method, _path, key, flat_ctx_response[key], flat_conf_response[key]);
+          ctx.throw(500, _method + ' ' + _path + ' <- ' + key + ' : ' + flat_ctx_response[key] + ' ✖ ' + flat_req_response[key]);
+        }     
+      });
     }
   }
 }
