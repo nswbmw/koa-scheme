@@ -129,7 +129,7 @@ curl -i -X PATCH \
 
 ![](https://github.com/MangroveTech/koa-scheme/blob/master/example.png?raw=true)
 
-### Lisence
+### License
 
 MIT
 
