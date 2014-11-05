@@ -56,13 +56,39 @@ koa-scheme is a parameter validation middleware for koa. It's very easy for usin
   ...
 }
 ```
+
+or a better way:
+
+**scheme.js**
+
+```
+module.exports = {
+  "/": {
+    "request": {
+      "method": "POST",
+      "body": {
+        "nameArr": testRequestNameArr
+      }
+    }
+  }
+}
+
+function testRequestNameArr(arr) {
+  if (arr.length === 3 && arr[1] === 'nswbmw') {
+    return true;
+  } else {
+    return false;
+  }
+}
+```
+
 **app.js**
 
 ```
 var koa = require('koa');
 //var bodyParser = require('koa-bodyparser');
 var scheme = require('koa-scheme');
-var conf = require('./scheme.json');
+var conf = require('./scheme');
 //var route = require('./route/');
 
 var app = koa();
