@@ -110,13 +110,20 @@ module.exports = {
 
 ```
 var koa = require('koa');
-//var bodyParser = require('koa-bodyparser');
+var bodyParser = require('koa-bodyparser');
 var scheme = require('koa-scheme');
 var conf = require('./scheme');
 //var route = require('./route/');
 
 var app = koa();
-//app.use(bodyParser());
+app.use(bodyParser());
+app.use(function* (next) {
+  try {
+    yield next;
+  } catch (e) {
+    console.log(e.message)
+  }
+});
 app.use(scheme(conf));
 
 app.use(function* () {
