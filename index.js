@@ -23,7 +23,7 @@ module.exports = scheme;
 
 function scheme(conf) {
   try {
-    conf = conf || require('./scheme.json');
+    conf = conf || require('./scheme.js') || require('./scheme.json');
   } catch(e) {}
   return function* (next) {
     var ctx = this;
@@ -31,20 +31,37 @@ function scheme(conf) {
     var _method;
     var _path;
 
-    Object.keys(conf).forEach(function (path) {
-      if (pathToRegexp(path).test(ctx.path)) {
-        if (!conf[path].request ||
-          !conf[path].request.method ||
-          RegExp(conf[path].request.method, "i").test(ctx.method)) {
-          _conf = conf[path];
-          _method = ctx.method;
-          _path = ctx.path;
+    var _keys = Object.keys(conf);
+    for (var i = 0; i < _keys.length; i++) {
+      var path = _keys[i];
+      var _arr = path.split(' ');
+      // compatible with v0.2.0
+      if (_arr.length === 1) {
+        if (pathToRegexp(_arr[0]).test(ctx.path)) {
+          if (!conf[path].request ||
+            !conf[path].request.method ||
+            RegExp(conf[path].request.method, "i").test(ctx.method)) {
+            _conf = conf[path];
+            _method = ctx.method;
+            _path = ctx.path;
 
-          debug('%s %s -> %s', _method, _path, path);
-          return;
+            debug('%s %s -> %s', _method, _path, path);
+            break;
+          }
+        }
+      } else if (_arr.length === 2) {
+        if (pathToRegexp(_arr[1]).test(ctx.path)) {
+          if (RegExp(_arr[0], "i").test(ctx.method)) {
+            _conf = conf[path];
+            _method = ctx.method;
+            _path = ctx.path;
+
+            debug('%s %s -> %s', _method, _path, path);
+            break;
+          }
         }
       }
-    });
+    };
 
     if (_conf) {
       flat_conf_request = flatten(_conf.request || {});

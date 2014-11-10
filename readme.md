@@ -82,6 +82,30 @@ function testRequestNameArr(arr) {
 }
 ```
 
+or:
+
+```
+module.exports = {
+  "GET /user/:name": {
+    "request": {
+      ...
+    },
+    "response": {
+      "body": {
+        "name": "[_0-9a-zA-Z]{6, 20}"
+      }
+    }
+  },
+  "POST /user": {
+    "request": {
+      "body": {
+        "name": "[_0-9a-zA-Z]{6, 20}"
+      }
+    }
+  }
+}
+```
+
 **app.js**
 
 ```
