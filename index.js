@@ -23,8 +23,10 @@ module.exports = scheme;
 
 function scheme(conf) {
   try {
-    conf = conf || require('./scheme.js') || require('./scheme.json');
-  } catch(e) {}
+    conf = conf || require(__dirname.split('node_modules')[0] + 'scheme.js') || require(__dirname.split('node_modules')[0] + 'scheme.json');
+  } catch(e) {
+    console.error(e);
+  }
   return function* (next) {
     var ctx = this;
     var _conf;
