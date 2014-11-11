@@ -16,8 +16,8 @@ koa-scheme is a parameter validation middleware for koa. It's very easy for usin
     "request": {
       "method": "(POST|PATCH)",
       "header": {
-        "X-GG-User": "[a-zA-Z]+",
-        "X-MM-User": "[a-zA-Z]+"
+        "x-gg-user": "[a-zA-Z]+",
+        "x-mm-user": "[a-zA-Z]+"
       },
       "query": {
         "vip": true
