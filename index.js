@@ -70,7 +70,7 @@ function scheme(conf) {
       flat_ctx_request = flatten(filterFunc(ctx.request) || {}, {safe: true});
 
       Object.keys(flat_conf_request).forEach(function (key) {
-        if (!flat_ctx_request[key]) {
+        if (flat_ctx_request[key] === undefined) {
           debug('%s %s -> %s', _method, _path, key + ' : Not exist!');
           ctx.throw(400, _method + ' ' + _path + ' -> ' + key + ' : Not exist!');
         }
@@ -92,7 +92,7 @@ function scheme(conf) {
       flat_ctx_response = flatten(filterFunc(ctx.response) || {}, {safe: true});
 
       Object.keys(flat_conf_response).forEach(function (key) {
-        if (!flat_ctx_response[key]) {
+        if (flat_ctx_response[key] === undefined) {
           debug('%s %s <- %s', _method, _path, key + ' : Not exist!');
           ctx.throw(500, _method + ' ' + _path + ' <- ' + key + ' : Not exist!');
         }
