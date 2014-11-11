@@ -103,7 +103,7 @@ function scheme(conf) {
         } else {
           if (!RegExp(flat_conf_response[key]).test(flat_ctx_response[key])) {
             debug('%s %s <- %s : %s ✖ %s', _method, _path, key, flat_ctx_response[key], flat_conf_response[key]);
-            ctx.throw(500, _method + ' ' + _path + ' <- ' + key + ' : ' + flat_ctx_response[key] + ' ✖ ' + flat_req_response[key]);
+            ctx.throw(500, _method + ' ' + _path + ' <- ' + key + ' : ' + flat_ctx_response[key] + ' ✖ ' + flat_conf_response[key]);
           }
         }
       });
