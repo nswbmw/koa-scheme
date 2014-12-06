@@ -47,7 +47,6 @@ function scheme(conf) {
             _method = ctx.method;
             _path = ctx.path;
 
-            debug('%s %s -> %s', _method, _path, path);
             break;
           }
         }
@@ -58,7 +57,6 @@ function scheme(conf) {
             _method = ctx.method;
             _path = ctx.path;
 
-            debug('%s %s -> %s', _method, _path, path);
             break;
           }
         }
@@ -72,16 +70,17 @@ function scheme(conf) {
       Object.keys(flat_conf_request).forEach(function (key) {
         if (flat_ctx_request[key] === undefined) {
           debug('%s %s -> %s', _method, _path, key + ' : Not exist!');
-          ctx.throw(400, _method + ' ' + _path + ' -> ' + key + ' : Not exist!');
+          ctx.throw(400);
         }
         if (typeof flat_conf_request[key] === 'function') {
           if(!flat_conf_request[key](flat_ctx_request[key])) {
-            ctx.throw(400, _method + ' ' + _path + ' -> ' + key + ' : ' + flat_ctx_request[key] + ' ✖ ' + '[Function: ' + (flat_conf_request[key].name || 'function') + ']');
+            debug(_method + ' ' + _path + ' -> ' + key + ' : ' + flat_ctx_request[key] + ' ✖ ' + '[Function: ' + (flat_conf_request[key].name || 'function') + ']');
+            ctx.throw(400);
           }
         } else {
           if (!RegExp(flat_conf_request[key]).test(flat_ctx_request[key])) {
             debug('%s %s -> %s : %s ✖ %s', _method, _path, key, flat_ctx_request[key], flat_conf_request[key]);
-            ctx.throw(400, _method + ' ' + _path + ' -> ' + key + ' : ' + flat_ctx_request[key] + ' ✖ ' + flat_conf_request[key]);
+            ctx.throw(400);
           }
         }
       });
@@ -94,16 +93,17 @@ function scheme(conf) {
       Object.keys(flat_conf_response).forEach(function (key) {
         if (flat_ctx_response[key] === undefined) {
           debug('%s %s <- %s', _method, _path, key + ' : Not exist!');
-          ctx.throw(500, _method + ' ' + _path + ' <- ' + key + ' : Not exist!');
+          ctx.throw(500);
         }
         if (typeof flat_conf_response[key] === 'function') {
           if(!flat_conf_response[key](flat_ctx_response[key])) {
-            ctx.throw(500, _method + ' ' + _path + ' <- ' + key + ' : ' + flat_ctx_response[key] + ' ✖ ' + '[Function: ' + (flat_conf_response[key].name || 'function') + ']');
+            debug(_method + ' ' + _path + ' <- ' + key + ' : ' + flat_ctx_response[key] + ' ✖ ' + '[Function: ' + (flat_conf_response[key].name || 'function') + ']');
+            ctx.throw(500);
           }
         } else {
           if (!RegExp(flat_conf_response[key]).test(flat_ctx_response[key])) {
             debug('%s %s <- %s : %s ✖ %s', _method, _path, key, flat_ctx_response[key], flat_conf_response[key]);
-            ctx.throw(500, _method + ' ' + _path + ' <- ' + key + ' : ' + flat_ctx_response[key] + ' ✖ ' + flat_conf_response[key]);
+            ctx.throw(500);
           }
         }
       });
