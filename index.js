@@ -21,93 +21,92 @@ module.exports = scheme;
  * @api public
  */
 
-function scheme(conf) {
-  try {
-    conf = conf || require(__dirname.split('node_modules')[0] + 'scheme.js') || require(__dirname.split('node_modules')[0] + 'scheme.json');
-  } catch(e) {
-    console.error(e);
+function scheme(conf, options) {
+  if (!conf || 'object' !== typeof conf) {
+    throw new Error('No scheme.');
   }
+  options = options || {};
+
+  var _conf = {};
+
+  Object.keys(conf).forEach(function (path) {
+    // eg: 'GET /user/:userId'
+    if (path.match(/ /)) {
+      _conf[path] = conf[path];
+    } else {
+      // eg: '/user/:userId', request.method: 'GET'
+      _conf[((conf[path].request || {}).method || '(.+)') + ' ' + path] = conf[path];
+    }
+  });
+
+  // flat object, but preserve array, see: https://www.npmjs.com/package/flat#safe
+  Object.keys(_conf).forEach(function (path) {
+    if (_conf[path].request) _conf[path].request = flatten(_conf[path].request, {safe: true});
+    if (_conf[path].response) _conf[path].response = flatten(_conf[path].response, {safe: true});
+  });
+
+  if (options.debug) console.log(_conf);
+
   return function* (next) {
     var ctx = this;
-    var _conf;
-    var _method;
-    var _path;
+    var matchArr = [];
 
-    var _keys = Object.keys(conf);
-    for (var i = 0; i < _keys.length; i++) {
-      var path = _keys[i];
-      var _arr = path.split(' ');
-      // compatible with v0.2.0
-      if (_arr.length === 1) {
-        if (pathToRegexp(_arr[0]).test(ctx.path)) {
-          if (!conf[path].request ||
-            !conf[path].request.method ||
-            RegExp(conf[path].request.method, "i").test(ctx.method)) {
-            _conf = conf[path];
-            _method = ctx.method;
-            _path = ctx.path;
-
-            debug('%s %s -> %s', _method, _path, path);
-            break;
-          }
-        }
-      } else if (_arr.length === 2) {
-        if (pathToRegexp(_arr[1]).test(ctx.path)) {
-          if (RegExp(_arr[0], "i").test(ctx.method)) {
-            _conf = conf[path];
-            _method = ctx.method;
-            _path = ctx.path;
-
-            debug('%s %s -> %s', _method, _path, path);
-            break;
-          }
-        }
+    var ctx_path = ctx.method + ' ' + ctx.path;
+    Object.keys(_conf).forEach(function (path) {
+      if (pathToRegexp(path).test(ctx_path)) {
+        matchArr.push(_conf[path]);
       }
-    };
+    });
 
-    if (_conf) {
-      flat_conf_request = flatten(_conf.request || {});
-      flat_ctx_request = flatten(filterFunc(ctx.request) || {}, {safe: true});
+    // request
+    matchArr.forEach(function (rule) {
+      var flat_conf_request = rule.request || {};
+      var flat_ctx_request = flatten(filterFunc(ctx.request), {safe: true});
 
       Object.keys(flat_conf_request).forEach(function (key) {
         if (flat_ctx_request[key] === undefined) {
-          debug('%s %s -> %s', _method, _path, key + ' : Not exist!');
-          ctx.throw(400, _method + ' ' + _path + ' -> ' + key + ' : Not exist!');
+          debug('%s %s <- %s', ctx.method, ctx.path, key + ' : Not exist!');
+          ctx.throw(400, key + ' : Not exist!');
         }
-        if (typeof flat_conf_request[key] === 'function') {
-          if(!flat_conf_request[key](flat_ctx_request[key])) {
-            ctx.throw(400, _method + ' ' + _path + ' -> ' + key + ' : ' + flat_ctx_request[key] + ' ✖ ' + '[Function: ' + (flat_conf_request[key].name || 'function') + ']');
+        if ('function' === typeof flat_conf_request[key]) {
+          if(!flat_conf_request[key].call(ctx, flat_ctx_request[key])) {
+            debug('%s %s <- %s : %s ✖ [Function: %s]', ctx.method, ctx.path, key, flat_ctx_request[key], (flat_conf_request[key].name || 'function'));
+            ctx.throw(400, key + ' : ' + flat_ctx_request[key] + ' ✖ [Function: ' + (flat_conf_request[key].name || 'function') + ']');
           }
         } else {
           if (!RegExp(flat_conf_request[key]).test(flat_ctx_request[key])) {
-            debug('%s %s -> %s : %s ✖ %s', _method, _path, key, flat_ctx_request[key], flat_conf_request[key]);
-            ctx.throw(400, _method + ' ' + _path + ' -> ' + key + ' : ' + flat_ctx_request[key] + ' ✖ ' + flat_conf_request[key]);
+            debug('%s %s <- %s : %s ✖ %s', ctx.method, ctx.path, key, flat_ctx_request[key], flat_conf_request[key]);
+            ctx.throw(400, key + ' : ' + flat_ctx_request[key] + ' ✖ ' + flat_conf_request[key]);
           }
         }
       });
+    });
 
-      yield* next;
+    yield* next;
 
-      flat_conf_response = flatten(_conf.response || {});
-      flat_ctx_response = flatten(filterFunc(ctx.response) || {}, {safe: true});
+    // response
+    matchArr.forEach(function (rule) {
+      var flat_conf_response = rule.response || {};
+      var flat_ctx_response = flatten(filterFunc(ctx.response), {safe: true});
 
       Object.keys(flat_conf_response).forEach(function (key) {
         if (flat_ctx_response[key] === undefined) {
-          debug('%s %s <- %s', _method, _path, key + ' : Not exist!');
-          ctx.throw(500, _method + ' ' + _path + ' <- ' + key + ' : Not exist!');
+          debug('%s %s -> %s', ctx.method, ctx.path, key + ' : Not exist!');
+          ctx.throw(500, key + ' : Not exist!');
         }
-        if (typeof flat_conf_response[key] === 'function') {
-          if(!flat_conf_response[key](flat_ctx_response[key])) {
-            ctx.throw(500, _method + ' ' + _path + ' <- ' + key + ' : ' + flat_ctx_response[key] + ' ✖ ' + '[Function: ' + (flat_conf_response[key].name || 'function') + ']');
+        if ('function' === typeof flat_conf_response[key]) {
+          if(!flat_conf_response[key].call(ctx, flat_ctx_response[key])) {
+            debug('%s %s -> %s : %s ✖ [Function: %s]', ctx.method, ctx.path, key, flat_ctx_response[key], (flat_conf_response[key].name || 'function'));
+            ctx.throw(500, key + ' : ' + flat_ctx_response[key] + ' ✖ [Function: ' + (flat_conf_response[key].name || 'function') + ']');
           }
         } else {
           if (!RegExp(flat_conf_response[key]).test(flat_ctx_response[key])) {
-            debug('%s %s <- %s : %s ✖ %s', _method, _path, key, flat_ctx_response[key], flat_conf_response[key]);
-            ctx.throw(500, _method + ' ' + _path + ' <- ' + key + ' : ' + flat_ctx_response[key] + ' ✖ ' + flat_conf_response[key]);
+            debug('%s %s -> %s : %s ✖ %s', ctx.method, ctx.path, key, flat_ctx_response[key], flat_conf_response[key]);
+            ctx.throw(500, key + ' : ' + flat_ctx_response[key] + ' ✖ ' + flat_conf_response[key]);
           }
         }
       });
-    }
+    });
   }
 }
 
@@ -120,13 +119,13 @@ function scheme(conf) {
  * @api private
  */
 
-function filterFunc(request) {
-  var _request = {};
+function filterFunc(ctx) {
+  var _ctx = {};
   ["header", "headers", "method", "url", "originalUrl", "path", "query", 
-  "querystring", "host", "hostname", "fresh", "stale", 
+  "querystring", "host", "hostname", "fresh", "stale",
   "protocol", "secure", "ip", "ips", "subdomains", 
-  "body", "status", "length", "type", "headerSent"].forEach(function (item) {
-    if (request[item]) _request[item] = request[item];
+  "body", "status", "message", "length", "type", "headerSent"].forEach(function (item) {
+    if (ctx[item]) _ctx[item] = ctx[item];
   });
-  return _request;
+  return _ctx;
 }

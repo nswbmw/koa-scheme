@@ -1,6 +1,6 @@
 ## koa-scheme
 
-koa-scheme is a parameter validation middleware for koa. It's very easy for using, checkout ~
+koa-scheme is a parameter validation middleware for koa.
 
 ### Install
 
@@ -8,62 +8,85 @@ koa-scheme is a parameter validation middleware for koa. It's very easy for usin
     
 ### Usage
 
+    scheme(config, options)
+
+- config: {Object} scheme object.
+- options: {Object}
+  - debug: {Boolean} whether to print compiled `config`.
+
+**app.js**
+
+```
+var koa = require('koa');
+//var bodyParser = require('koa-bodyparser');
+var scheme = require('koa-scheme');
+var conf = require('./scheme');
+var route = require('./route');
+
+var app = koa();
+//app.use(bodyParser());
+app.use(scheme(conf));
+
+route(app);
+
+app.listen(3000, function() {
+  console.log("listening on 3000")
+});
+```
+
 **scheme.json**
 
 ```
 {
-  "/user/:user": {
+  "/(.*)": {
     "request": {
-      "method": "(POST|PATCH)",
       "header": {
-        "x-gg-user": "[a-zA-Z]+",
-        "x-mm-user": "[a-zA-Z]+"
-      },
-      "query": {
-        "vip": true
-      },
-      "body": {
-        "name": "[a-zA-Z]+",
-        "age": "[0-9]{1,2}",
-        "family": {
-          "sister": {
-            "name": ".+",
-            "age": "[0-9]{1,2}"
-          },
-          "mother": {...},
-          "father": {...}
-        }
-      },
-      ...
-    },
-    "response": {
-      "body": {
-        "name": "[a-zA-Z]+",
-        "age": "[0-9]{1,2}",
-        "family": {
-          "sister": {
-            "name": ".+",
-            "age": "[0-9]{1,2}"
-          }
-        }
+        "version": "[1-9]+"        
       }
     }
   },
-  "/file/:user": {
-    "request": {...},
-    "response": {...}
+  "/": {
+    "response": {
+      "status": 200
+    }
   },
-  ...
+  "GET /user/:username": {
+    "response": {
+      "body": {
+        "name": /[a-z]+/i,
+        "age": "[0-9]{1,3}"
+      }
+    }
+  },
+  "/user/:username": {
+    "request": {
+      "method": "(POST|patch)",
+      "body": {
+        "name": "[a-zA-Z]+",
+        "age": /[0-9]{1,3}/
+      }
+    },
+    "response": {
+      "status": 200
+    }
+  },
+  "(delete|OPTIONS) /user/:username": {
+    ...
+  }
 }
 ```
 
-or a better way:
+see [path-to-regexp](https://github.com/pillarjs/path-to-regexp).
+
+**NB**: when use body-parser middleware (like: koa-bodyparser) before koa-scheme, you could configure 'body' field in 'request'.
+
+use function:
 
 **scheme.js**
 
 ```
 module.exports = {
-  "/": {
+  "/users": {
     "request": {
       "method": "POST",
       "body": {
@@ -82,114 +105,99 @@ function testRequestNameArr(arr) {
 }
 ```
 
-or:
+with [validator](https://github.com/chriso/validator.js):
+
+**scheme.js**
 
 ```
+var validator = require('validator');
+
 module.exports = {
-  "GET /user/:name": {
-    "request": {
-      ...
-    },
+  "GET /user/:username": {
     "response": {
       "body": {
-        "name": "[_0-9a-zA-Z]{6, 20}"
-      }
-    }
-  },
-  "POST /user": {
-    "request": {
-      "body": {
-        "name": "[_0-9a-zA-Z]{6, 20}"
+        "age": validator.isNumeric,
+        "email": validator.isEmail,
+        "webset": validator.isURL,
+        ...
       }
     }
   }
 }
 ```
 
-**app.js**
+Even you could write flat object like this:
 
 ```
-var koa = require('koa');
-var bodyParser = require('koa-bodyparser');
-var scheme = require('koa-scheme');
-var conf = require('./scheme');
-//var route = require('./route/');
-
-var app = koa();
-app.use(bodyParser());
-app.use(function* (next) {
-  try {
-    yield next;
-  } catch (e) {
-    console.log(e.message)
-  }
-});
-app.use(scheme(conf));
-
-app.use(function* () {
-  this.body = {
-    name: "nswbmw",
-    age: 23,
-    family: {
-      sister: {
-        age: 28
-      }
+{
+  "GET /user/:username": {
+    "response": {
+      "body.age": validator.isNumeric,
+      "body.email": validator.isEmail,
+      "body.family.mother.age": validator.isNumeric
     }
   }
-});
-
-//route(app);
-app.listen(3000, function() {
-  console.log("listening on 3000")
-});
-```
-**NB**: when use koa-bodyparser before koa-scheme, you could configure 'body' field in 'request'.
-
-### Screenshot
-
-```
-curl -i -X POST \
-    -H "Content-Type: application/json" \
-    -H 'X-GG-User: gg' \
-    -H 'X-MM-User: mm' \
-    -d '{"name": "nswbmw", "age": 23, "family": {"sister": {"name": "sister", "age": 28}}}' \
-    'http://localhost:3000/user/nswbmw?vip=true'
-    
-curl -i -X PATCH \
-    -H "Content-Type: application/json" \
-    -H 'X-GG-User: gg' \
-    -H 'X-MM-User: mm' \
-    -d '{"name": "nswbmw", "age": 23, "family": {"sister": {"name": "sister", "age": 28}}}' \
-    'http://localhost:3000/user/nswbmw?vip=true'
-
-curl -i -X POST \
-    -H "Content-Type: application/json" \
-    -H 'X-GG-User: gg' \
-    -H 'X-MM-User: mm' \
-    -d '{"name": "nswbmw", "age": 23, "family": {"sister": {"name": "sister", "age": 28}}}' \
-    'http://localhost:3000/user/nswbmw?vip=false'
-
-curl -i -X POST \
-    -H "Content-Type: application/json" \
-    -H 'X-GG-User: gg' \
-    -H 'X-MM-User: mm' \
-    -d '{"name": "nswbmw", "age": 23, "family": {"sister": {"name": "sister", "age": 28}}}' \
-    'http://localhost:3000/user/nswbmw'
-
-curl -i -X PATCH \
-    -H "Content-Type: application/json" \
-    -H 'X-GG-User: gg' \
-    -H 'X-MM-User: mm' \
-    -d '{"name": 23, "age": "nswbmw", "family": {"sister": {"name": "sister", "age": 28}}}' \
-    'http://localhost:3000/user/nswbmw?vip=true'
+}
 ```
 
-![](https://github.com/MangroveTech/koa-scheme/blob/master/example.png?raw=true)
+### Example
+
+**scheme.js**
+
+```
+var validator = require('validator');
+
+module.exports = {
+  "/(.*)": {
+    "request": {
+      "header.version": "[1-9]+"
+    }
+  },
+  "/users": {
+    "request": {
+      "method": "GET"
+    },
+    "response": {
+      "body": testRes
+    }
+  },
+  "GET /user/:username": {
+    "response": {
+      "body": {
+        "name": "[a-zA-Z]+",
+        "age": validator.isNumeric,
+        "email": validator.isEmail
+      }
+    }
+  },
+  "/user/:username": {
+    "request": {
+      "method": "(POST|PATCH)",
+      "body.name": /[a-zA-Z]+/,
+      "body.age": "[0-9]{1,3}",
+      "body.email": validator.isEmail
+    }
+  },
+  "(delete|OPTIONS) /user/:username": {
+    "response": {
+      "status": 200
+    }
+  }
+}
+
+function testRes(arr) {
+  if (arr && Array.isArray(arr) && arr.some(function (user) {return user.name === 'nswbmw'})) {
+    return true;
+  } else {
+    return false;
+  }
+}
+```
+
+### Test
+
+   npm test
 
 ### License
 
 MIT
-
-
-
-
