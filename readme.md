@@ -175,9 +175,7 @@ module.exports = {
       "method": "(POST|PATCH)",
       "body.name": /[a-zA-Z]+/,
       "body.age": "[0-9]{1,3}",
-      "body.email": validator.isEmail,
-      "password": checkPassword,
-      "re_password": checkPassword
+      "body.email": validator.isEmail
     }
   },
   "(delete|OPTIONS) /user/:username": {
@@ -194,13 +192,6 @@ function testRes(arr) {
     return false;
   }
 }
-
-function checkPassword(password) {
-  return function(re_password) {
-    return password === re_password;
-  }
-}
-
 ```
 
 ### Test
