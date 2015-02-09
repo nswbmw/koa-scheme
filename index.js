@@ -5,6 +5,7 @@
 var pathToRegexp = require('path-to-regexp');
 var flatten = require('flat').flatten;
 var debug = require('debug')('koa-scheme');
+var methods = require('methods');
 
 /**
  * Expose `scheme()`.
@@ -29,9 +30,10 @@ function scheme(conf, options) {
 
   var _conf = {};
 
+  var pathReg = new RegExp('^(' + methods.join('|') + ')\\s+\/', 'i');
   Object.keys(conf).forEach(function (path) {
     // eg: 'GET /user/:userId'
-    if (path.match(/ /)) {
+    if (pathReg.test(path)) {
       _conf[path] = conf[path];
     } else {
       // eg: '/user/:userId', request.method: 'GET'
