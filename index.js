@@ -30,7 +30,7 @@ function scheme(conf, options) {
 
   var _conf = {};
 
-  var pathReg = new RegExp('^(' + methods.join('|') + ')\\s+\/', 'i');
+  var pathReg = new RegExp('(' + methods.join('|') + ')\\S*\\s+\/', 'i');
   Object.keys(conf).forEach(function (path) {
     // eg: 'GET /user/:userId'
     if (pathReg.test(path)) {
