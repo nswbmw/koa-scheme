@@ -12,7 +12,7 @@ koa-scheme is a parameter validation middleware for koa.
 
 - config: {Object} scheme object.
 - options: {Object}
-  - debug: {Boolean} whether to print compiled `config`.
+  - debug: {Boolean} If true, print compiled `config` and throw error, Default false.
 
 **app.js**
 
