@@ -1,6 +1,6 @@
 {
   "name": "koa-scheme",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "description": "koa-scheme is a parameter validation middleware for koa.",
   "main": "index.js",
   "license": "MIT",

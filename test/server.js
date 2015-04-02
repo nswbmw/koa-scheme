@@ -1,8 +1,9 @@
+var path = require('path');
 var koa = require('koa');
 var route = require('koa-route');
 var bodyparser = require('koa-bodyparser');
 var scheme = require('..');
-var conf = require('./scheme');
+// var conf = require('./scheme');
 
 var app = koa();
 
@@ -16,7 +17,8 @@ app.use(function* (next) {
 });
 
 app.use(bodyparser());
-app.use(scheme(conf, {debug: true}));
+app.use(scheme(path.join(__dirname, 'scheme'), {debug: true}));
+// app.use(scheme(conf, {debug: true}));
 
 var nameObj = {
   'nswbmw': {name: 'nswbmw', age: 23, email: 'nswbmw1992@gmail.com'}

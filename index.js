@@ -17,13 +17,16 @@ module.exports = scheme;
  * Check if ctx.request and ctx.response
  * satisfies the configuration file.
  *
- * @param {Object}
+ * @param {Object|String}
  * @return {Function}
  * @api public
  */
 
 function scheme(conf, options) {
-  if (!conf || 'object' !== typeof conf) {
+  if ('string' === typeof conf) {
+    conf = require(conf);
+  }
+  if (Object.prototype.toString.call(conf) !== '[object Object]') {
     throw new Error('No scheme.');
   }
   options = options || {};
