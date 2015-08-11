@@ -8,12 +8,6 @@ var debug = require('debug')('koa-scheme');
 var methods = require('methods');
 
 /**
- * Expose `scheme()`.
- */
-
-module.exports = scheme;
-
-/**
  * Check if ctx.request and ctx.response
  * satisfies the configuration file.
  *
@@ -22,7 +16,7 @@ module.exports = scheme;
  * @api public
  */
 
-function scheme(conf, options) {
+module.exports = function (conf, options) {
   if ('string' === typeof conf) {
     conf = require(conf);
   }
@@ -52,7 +46,7 @@ function scheme(conf, options) {
 
   if (options.debug) console.log(_conf);
 
-  return function* (next) {
+  return function* scheme (next) {
     var ctx = this;
     var matchArr = [];
 
@@ -71,17 +65,22 @@ function scheme(conf, options) {
       Object.keys(flat_conf_request).forEach(function (key) {
         if (flat_ctx_request[key] === undefined) {
           debug('%s %s <- %s', ctx.method, ctx.path, key + ' : Not exist!');
-          if (options.debug) ctx.throw(400, key + ' : Not exist!');
+          ctx.throw(400, key + ' : Not exist!');
         }
         if ('function' === typeof flat_conf_request[key]) {
-          if(!flat_conf_request[key].call(ctx, flat_ctx_request[key])) {
-            debug('%s %s <- %s : %s ✖ [Function: %s]', ctx.method, ctx.path, key, flat_ctx_request[key], (flat_conf_request[key].name || 'function'));
-            if (options.debug) ctx.throw(400, key + ' : ' + flat_ctx_request[key] + ' ✖ [Function: ' + (flat_conf_request[key].name || 'function') + ']');
+          try {
+            if (!flat_conf_request[key].call(ctx, flat_ctx_request[key])) {
+              ctx.throw(400, JSON.stringify(flat_ctx_request[key]) + ' ✖ [Function: ' + (flat_conf_request[key].name || 'function') + ']');
+            }
+          } catch (e) {
+            debug('%s %s <- %s : %s', ctx.method, ctx.path, key, e.message);
+            ctx.type = 'text/plain; charset=utf-8';
+            ctx.throw(400, e.message);
           }
         } else {
           if (!RegExp(flat_conf_request[key]).test(flat_ctx_request[key])) {
-            debug('%s %s <- %s : %s ✖ %s', ctx.method, ctx.path, key, flat_ctx_request[key], flat_conf_request[key]);
-            if (options.debug) ctx.throw(400, key + ' : ' + flat_ctx_request[key] + ' ✖ ' + flat_conf_request[key]);
+            debug('%s %s <- %s : %j ✖ %j', ctx.method, ctx.path, key, flat_ctx_request[key], flat_conf_request[key]);
+            ctx.throw(400, key + ' : ' + flat_ctx_request[key] + ' ✖ ' + flat_conf_request[key]);
           }
         }
       });
@@ -98,24 +97,29 @@ function scheme(conf, options) {
         Object.keys(flat_conf_response).forEach(function (key) {
           if (flat_ctx_response[key] === undefined) {
             debug('%s %s -> %s', ctx.method, ctx.path, key + ' : Not exist!');
-            if (options.debug) ctx.throw(500, key + ' : Not exist!');
+            ctx.throw(500, key + ' : Not exist!');
           }
           if ('function' === typeof flat_conf_response[key]) {
-            if(!flat_conf_response[key].call(ctx, flat_ctx_response[key])) {
-              debug('%s %s -> %s : %s ✖ [Function: %s]', ctx.method, ctx.path, key, flat_ctx_response[key], (flat_conf_response[key].name || 'function'));
-              if (options.debug) ctx.throw(500, key + ' : ' + flat_ctx_response[key] + ' ✖ [Function: ' + (flat_conf_response[key].name || 'function') + ']');
+            try {
+              if(!flat_conf_response[key].call(ctx, flat_ctx_response[key])) {
+                ctx.throw(500, JSON.stringify(flat_ctx_response[key]) + ' ✖ [Function: ' + (flat_conf_response[key].name || 'function') + ']');
+              }
+            } catch (e) {
+              debug('%s %s -> %s : %s', ctx.method, ctx.path, key, e.message);
+              ctx.type = 'text/plain; charset=utf-8';
+              ctx.throw(500, e.message);
             }
           } else {
             if (!RegExp(flat_conf_response[key]).test(flat_ctx_response[key])) {
-              debug('%s %s -> %s : %s ✖ %s', ctx.method, ctx.path, key, flat_ctx_response[key], flat_conf_response[key]);
-              if (options.debug) ctx.throw(500, key + ' : ' + flat_ctx_response[key] + ' ✖ ' + flat_conf_response[key]);
+              debug('%s %s -> %s : %j ✖ %j', ctx.method, ctx.path, key, flat_ctx_response[key], flat_conf_response[key]);
+              ctx.throw(500, key + ' : ' + flat_ctx_response[key] + ' ✖ ' + flat_conf_response[key]);
             }
           }
         });
       });
     }
   };
-}
+};
 
 /**
  * Only return readable attributes in 

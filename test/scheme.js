@@ -31,12 +31,17 @@ module.exports = {
       "body.email": validator.isEmail
     }
   },
+  "patch /user/:username": {
+    "request": {
+      "body.name": badRequest,
+    }
+  },
   "(delete|OPTIONS) /user/:username": {
     "response": {
       "status": 200
     }
   }
-}
+};
 
 function testRes(arr) {
   if (arr && Array.isArray(arr) && arr.some(function (user) {return user.name === 'nswbmw'})) {
@@ -44,4 +49,8 @@ function testRes(arr) {
   } else {
     return false;
   }
+}
+
+function badRequest() {
+  throw new Error('badRequest');
 }

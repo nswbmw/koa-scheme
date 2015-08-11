@@ -12,7 +12,7 @@ koa-scheme is a parameter validation middleware for koa.
 
 - config: {Object|String} scheme object or path.
 - options: {Object}
-  - debug: {Boolean} If true, print compiled `config` and throw error, Default false.
+  - debug: {Boolean} If true, print compiled `config`, Default false.
 
 **app.js**
 
@@ -185,12 +185,9 @@ module.exports = {
   }
 }
 
+// throw a error is ok
 function testRes(arr) {
-  if (arr && Array.isArray(arr) && arr.some(function (user) {return user.name === 'nswbmw'})) {
-    return true;
-  } else {
-    return false;
-  }
+  throw new Error('badRequest');
 }
 ```
 
