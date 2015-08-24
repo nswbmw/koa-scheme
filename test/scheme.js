@@ -31,6 +31,11 @@ module.exports = {
       "body.email": validator.isEmail
     }
   },
+  "POST /user/:username": {
+    "request": {
+      "body": checkUser,
+    }
+  },
   "patch /user/:username": {
     "request": {
       "body.name": badRequest,
@@ -53,4 +58,18 @@ function testRes(arr) {
 
 function badRequest() {
   throw new Error('badRequest');
+}
+
+function checkUser() {
+  var body = this.request.body;
+  if (!/[a-zA-Z]+/.test(body.name)) {
+    throw new Error('name shoule match /[a-zA-Z]+/');
+  }
+  if (!/[0-9]{1,3}/.test(body.age)) {
+    throw new Error('age shoule match /[0-9]{1,3}/');
+  }
+  if (!validator.isEmail(body.email)) {
+    throw new Error('email invalid');
+  }
+  return true;
 }

@@ -63,10 +63,6 @@ module.exports = function (conf, options) {
       var flat_ctx_request = flatten(filterFunc(ctx.request), {safe: true});
 
       Object.keys(flat_conf_request).forEach(function (key) {
-        if (flat_ctx_request[key] === undefined) {
-          debug('%s %s <- %s', ctx.method, ctx.path, key + ' : Not exist!');
-          ctx.throw(400, key + ' : Not exist!');
-        }
         if ('function' === typeof flat_conf_request[key]) {
           try {
             if (!flat_conf_request[key].call(ctx, flat_ctx_request[key])) {
@@ -78,6 +74,10 @@ module.exports = function (conf, options) {
             ctx.throw(400, e.message);
           }
         } else {
+          if (flat_ctx_request[key] === undefined) {
+            debug('%s %s <- %s', ctx.method, ctx.path, key + ' : Not exist!');
+            ctx.throw(400, key + ' : Not exist!');
+          }
           if (!RegExp(flat_conf_request[key]).test(flat_ctx_request[key])) {
             debug('%s %s <- %s : %j ✖ %j', ctx.method, ctx.path, key, flat_ctx_request[key], flat_conf_request[key]);
             ctx.throw(400, key + ' : ' + flat_ctx_request[key] + ' ✖ ' + flat_conf_request[key]);
@@ -95,10 +95,6 @@ module.exports = function (conf, options) {
         var flat_ctx_response = flatten(filterFunc(ctx.response), {safe: true});
 
         Object.keys(flat_conf_response).forEach(function (key) {
-          if (flat_ctx_response[key] === undefined) {
-            debug('%s %s -> %s', ctx.method, ctx.path, key + ' : Not exist!');
-            ctx.throw(500, key + ' : Not exist!');
-          }
           if ('function' === typeof flat_conf_response[key]) {
             try {
               if(!flat_conf_response[key].call(ctx, flat_ctx_response[key])) {
@@ -110,6 +106,10 @@ module.exports = function (conf, options) {
               ctx.throw(500, e.message);
             }
           } else {
+            if (flat_ctx_response[key] === undefined) {
+              debug('%s %s -> %s', ctx.method, ctx.path, key + ' : Not exist!');
+              ctx.throw(500, key + ' : Not exist!');
+            }
             if (!RegExp(flat_conf_response[key]).test(flat_ctx_response[key])) {
               debug('%s %s -> %s : %j ✖ %j', ctx.method, ctx.path, key, flat_ctx_response[key], flat_conf_response[key]);
               ctx.throw(500, key + ' : ' + flat_ctx_response[key] + ' ✖ ' + flat_conf_response[key]);
