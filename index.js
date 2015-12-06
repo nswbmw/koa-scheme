@@ -66,11 +66,11 @@ module.exports = function (conf, options) {
         if ('function' === typeof flat_conf_request[key]) {
           try {
             if (!flat_conf_request[key].call(ctx, flat_ctx_request[key])) {
-              ctx.throw(400, JSON.stringify(flat_ctx_request[key]) + ' ✖ [Function: ' + (flat_conf_request[key].name || 'function') + ']');
+              if (options.debug) ctx.throw(400, JSON.stringify(flat_ctx_request[key]) + ' ✖ [Function: ' + (flat_conf_request[key].name || 'function') + ']');
             }
           } catch (e) {
             debug('%s %s <- %s : %s', ctx.method, ctx.path, key, e.message);
-            ctx.throw(400, e.message);
+            ctx.throw(e.statusCode || e.status || 400, e.message);
           }
         } else {
           if (flat_ctx_request[key] === undefined) {
@@ -97,11 +97,11 @@ module.exports = function (conf, options) {
           if ('function' === typeof flat_conf_response[key]) {
             try {
               if (!flat_conf_response[key].call(ctx, flat_ctx_response[key])) {
-                ctx.throw(500, JSON.stringify(flat_ctx_response[key]) + ' ✖ [Function: ' + (flat_conf_response[key].name || 'function') + ']');
+                if (options.debug) ctx.throw(500, JSON.stringify(flat_ctx_response[key]) + ' ✖ [Function: ' + (flat_conf_response[key].name || 'function') + ']');
               }
             } catch (e) {
               debug('%s %s -> %s : %s', ctx.method, ctx.path, key, e.message);
-              ctx.throw(500, e.message);
+              ctx.throw(e.statusCode || e.status || 500, e.message);
             }
           } else {
             if (flat_ctx_response[key] === undefined) {
