@@ -70,7 +70,6 @@ module.exports = function (conf, options) {
             }
           } catch (e) {
             debug('%s %s <- %s : %s', ctx.method, ctx.path, key, e.message);
-            ctx.type = 'text/plain; charset=utf-8';
             ctx.throw(400, e.message);
           }
         } else {
@@ -97,12 +96,11 @@ module.exports = function (conf, options) {
         Object.keys(flat_conf_response).forEach(function (key) {
           if ('function' === typeof flat_conf_response[key]) {
             try {
-              if(!flat_conf_response[key].call(ctx, flat_ctx_response[key])) {
+              if (!flat_conf_response[key].call(ctx, flat_ctx_response[key])) {
                 ctx.throw(500, JSON.stringify(flat_ctx_response[key]) + ' ✖ [Function: ' + (flat_conf_response[key].name || 'function') + ']');
               }
             } catch (e) {
               debug('%s %s -> %s : %s', ctx.method, ctx.path, key, e.message);
-              ctx.type = 'text/plain; charset=utf-8';
               ctx.throw(500, e.message);
             }
           } else {
