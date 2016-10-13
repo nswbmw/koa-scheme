@@ -1,6 +1,6 @@
 {
   "name": "koa-scheme",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "koa-scheme is a parameter validation middleware for koa.",
   "main": "index.js",
   "license": "MIT",
@@ -20,15 +20,15 @@
   ],
   "dependencies": {
     "debug": "^2.2.0",
-    "flat": "^1.6.0",
-    "path-to-regexp": "~1.2.0",
-    "methods": "~1.1.1"
+    "flat": "^2.0.1",
+    "path-to-regexp": "~1.6.0",
+    "methods": "~1.1.2"
   },
   "devDependencies": {
     "supertest": "*",
     "validator": "*",
-    "koa": "*",
-    "koa-route": "*",
-    "koa-bodyparser": "*"
+    "koa": "^1.2.4",
+    "koa-route": "^2.4.2",
+    "koa-bodyparser": "^2.2.0"
   }
 }

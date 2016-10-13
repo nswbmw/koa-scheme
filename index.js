@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Module dependencies.
  */
@@ -58,8 +60,8 @@ module.exports = function (conf, options) {
     });
 
     // request
-    matchArr.forEach(function (rule) {
-      var flat_conf_request = rule.request || {};
+    matchArr.forEach(function (expect) {
+      var flat_conf_request = expect.request || {};
       var flat_ctx_request = flatten(filterFunc(ctx.request), {safe: true});
 
       Object.keys(flat_conf_request).forEach(function (key) {
@@ -89,8 +91,8 @@ module.exports = function (conf, options) {
       yield* next;
 
       // response
-      matchArr.forEach(function (rule) {
-        var flat_conf_response = rule.response || {};
+      matchArr.forEach(function (expect) {
+        var flat_conf_response = expect.response || {};
         var flat_ctx_response = flatten(filterFunc(ctx.response), {safe: true});
 
         Object.keys(flat_conf_response).forEach(function (key) {
@@ -130,10 +132,10 @@ module.exports = function (conf, options) {
 
 function filterFunc(ctx) {
   var _ctx = {};
-  ["header", "headers", "method", "url", "originalUrl", "path", "query", 
-  "querystring", "host", "hostname", "fresh", "stale",
+  ["header", "headers", "method", "url", "originalUrl", "origin", "href", "path", "query", 
+  "querystring", "search", "host", "hostname", "type", "charset", "fresh", "stale",
   "protocol", "secure", "ip", "ips", "subdomains", 
-  "body", "status", "message", "length", "type", "headerSent"].forEach(function (item) {
+  "body", "status", "message", "length", "headerSent", "lastModified"].forEach(function (item) {
     if (ctx[item]) _ctx[item] = ctx[item];
   });
   return _ctx;
