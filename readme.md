@@ -2,6 +2,8 @@
 
 koa-scheme is a parameter validation middleware for koa.
 
+version v3.0.0 support for koa2
+
 ### Install
 
     npm i koa-scheme --save
