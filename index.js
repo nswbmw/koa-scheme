@@ -4,11 +4,11 @@
  * Module dependencies.
  */
 
-var pathToRegexp = require('path-to-regexp');
-var flatten = require('flat').flatten;
-var debug = require('debug')('koa-scheme');
-var methods = require('methods');
-var convert = require('koa-convert');
+const { pathToRegexp } = require('path-to-regexp');
+const flatten = require('flat');
+const debug = require('debug')('koa-scheme');
+const methods = require('methods');
+
 /**
  * Check if ctx.request and ctx.response
  * satisfies the configuration file.
@@ -27,9 +27,9 @@ module.exports = function (conf, options) {
   }
   options = options || {};
 
-  var _conf = {};
+  const _conf = {};
 
-  var pathReg = new RegExp('(' + methods.join('|') + ')\\S*\\s+\/', 'i');
+  const pathReg = new RegExp('(' + methods.join('|') + ')\\S*\\s+\/', 'i');
   Object.keys(conf).forEach(function (path) {
     // eg: 'GET /user/:userId'
     if (pathReg.test(path)) {
@@ -48,11 +48,10 @@ module.exports = function (conf, options) {
 
   if (options.debug) console.log(_conf);
 
-  return convert(function* scheme (next) {
-    var ctx = this;
-    var matchArr = [];
+  return async function koaScheme (ctx, next) {
+    const matchArr = [];
 
-    var ctx_path = ctx.method + ' ' + ctx.path;
+    const ctx_path = ctx.method + ' ' + ctx.path;
     Object.keys(_conf).forEach(function (path) {
       if (pathToRegexp(path).test(ctx_path)) {
         matchArr.push(_conf[path]);
@@ -61,8 +60,8 @@ module.exports = function (conf, options) {
 
     // request
     matchArr.forEach(function (expect) {
-      var flat_conf_request = expect.request || {};
-      var flat_ctx_request = flatten(filterFunc(ctx.request), {safe: true});
+      const flat_conf_request = expect.request || {};
+      const flat_ctx_request = flatten(filterFunc(ctx.request), {safe: true});
 
       Object.keys(flat_conf_request).forEach(function (key) {
         if ('function' === typeof flat_conf_request[key]) {
@@ -87,13 +86,13 @@ module.exports = function (conf, options) {
       });
     });
 
-    if (this.status === 404) {
-      yield* next;
+    if (ctx.status === 404) {
+      await next();
 
       // response
       matchArr.forEach(function (expect) {
-        var flat_conf_response = expect.response || {};
-        var flat_ctx_response = flatten(filterFunc(ctx.response), {safe: true});
+        const flat_conf_response = expect.response || {};
+        const flat_ctx_response = flatten(filterFunc(ctx.response), {safe: true});
 
         Object.keys(flat_conf_response).forEach(function (key) {
           if ('function' === typeof flat_conf_response[key]) {
@@ -118,11 +117,11 @@ module.exports = function (conf, options) {
         });
       });
     }
-  });
+  }
 };
 
 /**
- * Only return readable attributes in 
+ * Only return readable attributes in
  * ctx.request and ctx.response.
  *
  * @param {Object}
@@ -131,10 +130,10 @@ module.exports = function (conf, options) {
  */
 
 function filterFunc(ctx) {
-  var _ctx = {};
-  ["header", "headers", "method", "url", "originalUrl", "origin", "href", "path", "query", 
+  const _ctx = {};
+  ["header", "headers", "method", "url", "originalUrl", "origin", "href", "path", "query",
   "querystring", "search", "host", "hostname", "type", "charset", "fresh", "stale",
-  "protocol", "secure", "ip", "ips", "subdomains", 
+  "protocol", "secure", "ip", "ips", "subdomains",
   "body", "status", "message", "length", "headerSent", "lastModified"].forEach(function (item) {
     if (ctx[item]) _ctx[item] = ctx[item];
   });

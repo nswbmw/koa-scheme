@@ -46,28 +46,28 @@ describe('Test koa-scheme', function (done) {
       .expect(200)
       .end(function (err, res) {
         if (err) return done(err);
-        if (res.body.length !== 1 || res.body[0].name !== 'nswbmw' || res.body[0].email !== 'nswbmw1992@gmail.com') {
-          return done('res.body should be `[{"name":"nswbmw","age":23,"email":"nswbmw1992@gmail.com"}]`');
+        if (res.body.length !== 1 || res.body[0].name !== 'example' || res.body[0].email !== 'example@gmail.com') {
+          return done('res.body should be `[{"name":"example","age":"23","email":"example@gmail.com"}]`');
         }
         done();
       });
   });
-  it('GET /user/nswbmw 200', function (done) {
+  it('GET /user/example 200', function (done) {
     request(app.callback())
-      .get('/user/nswbmw')
+      .get('/user/example')
       .set('version', 1)
       .expect(200)
       .end(function (err, res) {
         if (err) return done(err);
-        if (res.body.name !== 'nswbmw' || res.body.email !== 'nswbmw1992@gmail.com') {
-          return done('res.body should be `{"name":"nswbmw","age":23,"email":"nswbmw1992@gmail.com"}`');
+        if (res.body.name !== 'example' || res.body.email !== 'example@gmail.com') {
+          return done('res.body should be `{"name":"example","age":"23","email":"example@gmail.com"}`');
         }
         done();
       });
   });
-  it('GET /user/nswbmw2 500', function (done) {
+  it('GET /user/example2 500', function (done) {
     request(app.callback())
-      .get('/user/nswbmw2')
+      .get('/user/example2')
       .set('version', 1)
       .expect(500)
       .end(function (err, res) {
@@ -78,11 +78,11 @@ describe('Test koa-scheme', function (done) {
         done();
       });
   });
-  it('POST /user/nswbmw2 200', function (done) {
+  it('POST /user/example2 200', function (done) {
     request(app.callback())
-      .post('/user/nswbmw2')
+      .post('/user/example2')
       .set('version', 1)
-      .send({name: 'nswbmw2', age: 23, email: 'nswbmw1992@gmail.com'})
+      .send({name: 'example2', age: '23', email: 'example@gmail.com'})
       .expect(200)
       .end(function (err, res) {
         if (err) return done(err);
@@ -92,9 +92,9 @@ describe('Test koa-scheme', function (done) {
         done();
       });
   });
-  it('POST /user/nswbmw2 400', function (done) {
+  it('POST /user/example2 400', function (done) {
     request(app.callback())
-      .post('/user/nswbmw2')
+      .post('/user/example2')
       .set('version', 1)
       .send({err: 'err'})
       .expect(400)
@@ -106,23 +106,23 @@ describe('Test koa-scheme', function (done) {
         done();
       });
   });
-  it('PATCH /user/nswbmw3 400', function (done) {
+  it('PATCH /user/example3 400', function (done) {
     request(app.callback())
-      .patch('/user/nswbmw3')
+      .patch('/user/example3')
       .set('version', 1)
-      .send({name: 'nswbmw3', age: 23, email: 'nswbmw1992gmail.com'})
+      .send({name: 'example3', age: '23', email: 'example@gmail.com'})
       .expect(400)
       .end(function (err, res) {
         if (err) return done(err);
-        if (res.text !== '"nswbmw1992gmail.com" ✖ [Function: function]') {
-          return done('res.text should be `"nswbmw1992gmail.com" ✖ [Function: function]`');
+        if (res.text !== 'This is a bad request') {
+          return done('res.text should be `This is a bad request`');
         }
         done();
       });
   });
-  it('DELETE /user/nswbmw 200', function (done) {
+  it('DELETE /user/example 200', function (done) {
     request(app.callback())
-      .delete('/user/nswbmw')
+      .delete('/user/example')
       .set('version', 1)
       .expect(200)
       .end(function (err, res) {
@@ -133,9 +133,9 @@ describe('Test koa-scheme', function (done) {
         done();
       });
   });
-  it('GET /user/nswbmw 500', function (done) {
+  it('GET /user/example 500', function (done) {
     request(app.callback())
-      .get('/user/nswbmw')
+      .get('/user/example')
       .set('version', 1)
       .expect(500)
       .end(function (err, res) {

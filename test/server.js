@@ -1,47 +1,45 @@
 var path = require('path');
-var koa = require('koa');
+var Koa = require('koa');
 var route = require('koa-route');
 var bodyparser = require('koa-bodyparser');
 var scheme = require('..');
-// var conf = require('./scheme');
 
-var app = koa();
+var app = new Koa();
 
-app.use(function* (next) {
+app.use(async function (ctx, next) {
   try {
-    yield next;
+    await next();
   } catch(e) {
-    this.status = e.status;
-    this.body = e.message;
+    ctx.status = e.status;
+    ctx.body = e.message;
   }
 });
 
 app.use(bodyparser());
 app.use(scheme(path.join(__dirname, 'scheme'), {debug: true}));
-// app.use(scheme(conf, {debug: true}));
 
 var nameObj = {
-  'nswbmw': {name: 'nswbmw', age: 23, email: 'nswbmw1992@gmail.com'}
+  'example': {name: 'example', age: '23', email: 'example@gmail.com'}
 };
 
-app.use(route.get('/users', function* () {
-  this.body = Object.keys(nameObj).map(function (name) {
+app.use(route.get('/users', function (ctx) {
+  ctx.body = Object.keys(nameObj).map(function (name) {
     return nameObj[name];
   });
 }));
 
-app.use(route.get('/user/:username', function* (username) {
-  this.body = nameObj[username];
+app.use(route.get('/user/:username', function (ctx, username) {
+  ctx.body = nameObj[username];
 }));
 
-app.use(route.post('/user/:username', function* (username) {
-  nameObj[username] = this.request.body;
-  this.status = 200;
+app.use(route.post('/user/:username', function (ctx, username) {
+  nameObj[username] = ctx.request.body;
+  ctx.status = 200;
 }));
 
-app.use(route.delete('/user/:username', function* (username) {
+app.use(route.delete('/user/:username', function (ctx, username) {
   delete nameObj[username];
-  this.status = 200;
+  ctx.status = 200;
 }));
 
 if (module.parent) {

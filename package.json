@@ -19,17 +19,16 @@
     "check"
   ],
   "dependencies": {
-    "debug": "^2.2.0",
-    "flat": "^2.0.1",
-    "koa-convert": "^2.0.0",
+    "debug": "^4.3.2",
+    "flat": "^5.0.2",
     "methods": "~1.1.2",
-    "path-to-regexp": "~1.6.0"
+    "path-to-regexp": "~6.2.0"
   },
   "devDependencies": {
     "supertest": "*",
     "validator": "*",
-    "koa": "^1.2.4",
-    "koa-route": "^2.4.2",
-    "koa-bodyparser": "^2.2.0"
+    "koa": "^2.13.1",
+    "koa-route": "^3.2.0",
+    "koa-bodyparser": "^4.3.0"
   }
 }

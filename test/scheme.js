@@ -49,7 +49,7 @@ module.exports = {
 };
 
 function testRes(arr) {
-  if (arr && Array.isArray(arr) && arr.some(function (user) {return user.name === 'nswbmw'})) {
+  if (arr && Array.isArray(arr) && arr.some(function (user) {return user.name === 'example'})) {
     return true;
   } else {
     return false;
@@ -57,7 +57,7 @@ function testRes(arr) {
 }
 
 function badRequest() {
-  throw new Error('badRequest');
+  throw new Error('This is a bad request');
 }
 
 function checkUser() {
