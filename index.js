@@ -8,7 +8,7 @@ var pathToRegexp = require('path-to-regexp');
 var flatten = require('flat').flatten;
 var debug = require('debug')('koa-scheme');
 var methods = require('methods');
-
+var convert = require('koa-convert');
 /**
  * Check if ctx.request and ctx.response
  * satisfies the configuration file.
@@ -48,7 +48,7 @@ module.exports = function (conf, options) {
 
   if (options.debug) console.log(_conf);
 
-  return function* scheme (next) {
+  return convert(function* scheme (next) {
     var ctx = this;
     var matchArr = [];
 
@@ -118,7 +118,7 @@ module.exports = function (conf, options) {
         });
       });
     }
-  };
+  });
 };
 
 /**
